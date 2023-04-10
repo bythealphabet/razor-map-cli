@@ -1,0 +1,105 @@
+
+var util = require("util");
+var path = require("path");
+var fs = require("fs");
+var Transform = require("stream").Transform;
+var zlib = require("zlib");
+
+var CAF = require("caf");
+
+const getStdin = require("get-stdin");
+
+
+
+processFile = CAF(processFile);
+
+function streamComplete(stream) {
+    return new Promise(function c(resolve) {
+        stream.on("end", resolve);
+    });
+}
+
+var BASE_PATH = path.resolve(process.env.BASE_PATH || __dirname);
+var OUTFILE = path.join(BASE_PATH, "out.txt");
+
+if (args.help) {
+    printHelp();
+} else if (args.in || args._.includes("-")) {
+    let tooLong = CAF.timeout(17, "took too long!");
+
+    processFile(tooLong, process.stdin).catch(error);
+} else if (args.file) {
+    let stream = fs.createReadStream(path.join(BASE_PATH, args.file));
+    let tooLong = CAF.timeout(17, "took too long!");
+
+    processFile(tooLong, stream)
+        .then(() => {
+            console.log("Complete!");
+        })
+        .catch(error);
+} else {
+    error("Incorrect usage.", true);
+}
+
+//************************* */
+
+function* processFile(signal, inStream) {
+    var outStream = inStream;
+
+    if (args.uncompress) {
+        let gunzipStream = zlib.createGunzip();
+        outStream = outStream.pipe(gunzipStream);
+    }
+
+    var upperStream = new Transform({
+        transform(chunk, enc, cb) {
+            this.push(chunk.toString().toUpperCase());
+            cb();
+        },
+    });
+
+    outStream = outStream.pipe(upperStream);
+
+    if (args.compress) {
+        let gzipStream = zlib.createGzip();
+        outStream = outStream.pipe(gzipStream);
+        OUTFILE = `${OUTFILE}.gz`;
+    }
+
+    var targetStream;
+    if (args.out) {
+        targetStream = process.stdout;
+    } else {
+        targetStream = fs.createWriteStream(OUTFILE);
+    }
+
+    signal.pr.catch(function f() {
+        outStream.unpipe(targetStream);
+        outStream.destroy();
+    });
+
+    outStream.pipe(targetStream);
+    yield streamComplete(outStream);
+}
+
+function error(msg, includeHelp = false) {
+    console.error(msg);
+
+    if (includeHelp) {
+        console.log("");
+        printHelp();
+    }
+}
+
+function printHelp() {
+    console.log("ex1 usage:");
+    console.log("   ex1.js --file={FILENAME}");
+    console.log("");
+    console.log("--help                     print this help");
+    console.log("--file={FILENAME}          process the file");
+    console.log("--in, -                    process stdin");
+    console.log("--out                      process to stdout");
+    console.log("--compress                 gzip the output");
+    console.log("--uncompress               un-gzip the input");
+    console.log("");
+}

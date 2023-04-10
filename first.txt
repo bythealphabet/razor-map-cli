@@ -1,0 +1,100 @@
+
+import { readFileSync } from "fs";
+import {readFile} from "fs/promises";
+// import path from "path";
+
+
+function findPartials(fileContent: string): string[] {
+  const partials: string[] = [];
+  const regex = /{{> (.*)}}/g;
+  let match;
+  while ((match = regex.exec(fileContent)) !== null) {
+    partials.push(match[1]);
+  }
+  return partials;
+}
+
+// async function findFiles(root: string, extentsion: string): string[] {
+//   const files: string[] = [];
+//   // const walk = (dir: string) => {
+//   //   const entries = await readFileSync(dir, { withFileTypes: true });
+//   // }
+//   // walk(root);
+//   return files;
+// }
+
+// #!/usr/bin/env node
+
+// import fs from 'fs';
+// import path from 'path';
+
+// function findPartials(fileContent: string): string[] {
+//   const regex = /Html.PartialAsync\("(.*?)"\)/g;
+//   const matches = fileContent.matchAll(regex);
+//   return Array.from(matches, m => m[1]);
+// }
+
+// function findFiles(root: string, extension: string): string[] {
+//   const files: string[] = [];
+//   const traverse = (dir: string) => {
+//     const entries = fs.readdirSync(dir, { withFileTypes: true });
+//     for (const entry of entries) {
+//       const fullPath = path.join(dir, entry.name);
+//       if (entry.isDirectory()) {
+//         traverse(fullPath);
+//       } else if (entry.isFile() && entry.name.endsWith(extension)) {
+//         files.push(fullPath);
+//       }
+//     }
+//   };
+//   traverse(root);
+//   return files;
+// }
+
+// function processFile(filePath: string): Promise<[string, string[]]> {
+//   return new Promise((resolve, reject) => {
+//     const fileName = path.basename(filePath);
+//     const partials: string[] = [];
+
+//     const fileStream = fs.createReadStream(filePath, { encoding: 'utf-8' });
+//     let fileContent = '';
+
+//     fileStream.on('data', chunk => {
+//       fileContent += chunk;
+//       const matches = findPartials(chunk);
+
+//       for (const match of matches) {
+//         partials.push(match);
+//       }
+//     });
+
+//     fileStream.on('end', () => {
+//       resolve([fileName, partials]);
+//     });
+
+//     fileStream.on('error', error => {
+//       reject(error);
+//     });
+//   });
+// }
+
+// async function main(): Promise<void> {
+//   const razorFiles = findFiles('../Pages', '.cshtml');
+//   const partialMap: Record<string, string[]> = {};
+
+//   for (const filePath of razorFiles) {
+//     const [fileName, partials] = await processFile(filePath);
+//     if (partials.length > 0) {
+//       partialMap[fileName] = partials;
+//     }
+//   }
+
+//   for (const [view, partials] of Object.entries(partialMap)) {
+//     console.log(`${view}:`);
+//     for (const partial of partials) {
+//       console.log(`  -> ${partial}`);
+//     }
+//   }
+// }
+
+// main();
