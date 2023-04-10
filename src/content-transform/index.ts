@@ -1,5 +1,5 @@
 
-import { findPartials } from './find';
+import { findPartials} from  "../find" 
 import { Transform } from 'stream';
 
 export class ContentTransform extends Transform {
